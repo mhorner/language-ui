@@ -1,4 +1,5 @@
 import IApiController from "./IApiController";
+import Events from "../events/EventManager";
 
 class MessagesController extends IApiController {
     constructor(props) {
@@ -8,32 +9,31 @@ class MessagesController extends IApiController {
             rows: []
         };
 
-        document.addEventListener('LoadAllMessages', this.GetAllMessages.bind(this));
-        document.addEventListener('SaveNewMessage', this.SaveNewMessage.bind(this));
+
+        Events.Listen('LoadAllMessages', this.GetAllMessages.bind(this));
+        Events.Listen('SaveNewMessage', this.SaveNewMessage.bind(this));
     }
 
     // LoadAllMessasges
     // Raises the event to load all messages from the Message API.
     LoadAllMessages() {
-        document.dispatchEvent(new Event('LoadAllMessages'));
+        Events.Raise('LoadAllMessages');
     }
 
     async GetAllMessages() {
         let json = await this.Get('https://localhost:7179/api/Messages?culture=en-US');
 
-        const responseEvent = new CustomEvent('AllMessagesLoaded', { detail: { rows: json } });
-        window.dispatchEvent(responseEvent);
+        Events.Raise('AllMessagesLoaded', json);
     }
 
     async SaveNewMessage(event) {
         let detail = event.detail;
         let json = await this.Post(`https://localhost:7179/api/Message?` +
-            `key=${encodeURIComponent(detail.key)}` +
-            `&value=${encodeURIComponent(detail.value)}` +
-            `&culture=${encodeURIComponent(detail.culture)}`, event.detail);
+            `key=${encodeURIComponent(detail.data.key)}` +
+            `&value=${encodeURIComponent(detail.data.value)}` +
+            `&culture=${encodeURIComponent(detail.data.culture)}`, event.detail);
 
-        const responseEvent = new CustomEvent('SavedNewMessage', {detail: {response: json}});
-        document.dispatchEvent(responseEvent);
+        Events.Raise('SavedNewMessageSuccessful', json);
         this.LoadAllMessages();
     }
 }

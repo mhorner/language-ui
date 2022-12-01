@@ -2,12 +2,13 @@ import * as React from 'react';
 import { Box } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import MessageController from '../controller/MessagesController';
+import Events from "../events/EventManager";
 
 class MessageTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            gridHeight: '150px',
+            gridHeight: this.calculateGridHeight(),
             rows: [],
             columns: [
                 { field: 'id', headerName: 'ID', flex: 1 },
@@ -27,23 +28,19 @@ class MessageTable extends React.Component {
 
     updateGrid(event) {
         var currentState = this.state.rows.slice();
-        currentState.rows = event.detail.rows;
+        currentState.rows = event.detail.data;
         this.setState(currentState);
     }
 
     async componentDidMount() {
         MessageController.LoadAllMessages();
-        window.addEventListener('AllMessagesLoaded', this.updateGrid.bind(this));
-        window.addEventListener("resize", this.handleResize.bind(this));
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener("resize", null);
+        Events.Listen('AllMessagesLoaded', this.updateGrid, this);
+        Events.Listen('resize', this.handleResize, this);
     }
 
     render() {
         return (
-            <Box sx={{ margin: '20px 20px', height: this.calculateGridHeight(), width: 'calc(100% - 40px)' }}>
+            <Box sx={{ margin: '20px 20px', height: this.state.gridHeight, width: 'calc(100% - 40px)' }}>
                 <DataGrid rows={this.state.rows} columns={this.state.columns} disableSelectionOnClick experimentalFeatures={{ newEditingApi: true }} />
             </Box>
         );

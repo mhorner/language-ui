@@ -2,59 +2,77 @@
 import React from 'react';
 import { Button, DialogContentText, TextField } from '@mui/material';
 import { Dialog, DialogContent, DialogTitle, DialogActions } from '@mui/material';
+import Events from '../events/EventManager';
 
-export default function MessageForm() {
-    const [open, setOpen] = React.useState(false);
-    const [messageKey, setMessageKey] = React.useState('');
-    const [messageValue, setMessageValue] = React.useState('');
-    const [messageCulture, setMessageCulture] = React.useState('');
+class MessageForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            open: false,
+            messageKey: '',
+            messageValue: '',
+            messageCulture: ''
+        };
+    }
 
-    const updateKey = (e) => {
-        setMessageKey(e.target.value);
+    updateKey(e) {
+        this.setState({messageKey: e.target.value});
     }
-    const updateValue = (e) => {
-        setMessageValue(e.target.value);
+    updateValue(e) {
+        this.setState({messageValue: e.target.value});
     }
-    const updateCulture = (e) => {
-        setMessageCulture(e.target.value);
+    updateCulture(e) {
+        this.setState({messageCulture: e.target.value});
     }
-    const handleClickOpen = () => {
-        setOpen(true);
+    handleClickOpen() {
+        this.setState({open: true});
     };
 
-    const handleClose = () => {
-        setOpen(false);
+    handleClose() {
+        this.setState({open: false});
     };
 
-    const save = () => {
+    save() {
         console.log('saving...');
-        document.dispatchEvent(new CustomEvent('SaveNewMessage', {detail: {
-            key: messageKey,
-            value: messageValue,
-            culture: messageCulture
-        }}));
+        Events.Raise('SaveNewMessage', {
+            key: this.state.messageKey,
+            value: this.state.messageValue,
+            culture: this.state.messageCulture
+        });
     }
 
-    document.addEventListener('ShowMessageForm', handleClickOpen);
-    document.addEventListener('SavedNewMessage', handleClose);
+    componentDidMount() {
+        Events.Listen('ShowMessageForm', this.handleClickOpen, this);
+        Events.Listen('SavedNewMessageSuccessful', this.handleClose, this);
+    }
 
-    // sx={{ minWidth: 275, maxWidth: 354, position: 'absolute', zIndex: 1 }}>
-    return (
-        <div>
-                <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add a new message</DialogTitle>
-                <DialogContentText>Adding new messages to the catalog, enhances the application experience with possibility of
-                    adding a translation to help all users use the application.
-                </DialogContentText>
-                <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <TextField id="messageKey" variant="standard" label="Key" required={true} value={messageKey} onChange={updateKey} />
-                    <TextField id="messageValue" variant="standard" label="Value" required={true}  value={messageValue} onChange={updateValue} />
-                    <TextField id="messageCulture" variant="standard" label="Culture" required={true}  value={messageCulture} onChange={updateCulture} />
-                </DialogContent>
-                <DialogActions>
-                    <Button variant='contained' onClick={save}>Save</Button>
-                    <Button variant='text' onClick={handleClose}>Cancel</Button>
-                </DialogActions>
-            </Dialog>
-        </div>);
+    render() {
+        const save = this.save.bind(this);
+        const handleClose = this.handleClose.bind(this);
+        const updateKey = this.updateKey.bind(this);
+        const updateValue = this.updateValue.bind(this);
+        const updateCulture = this.updateCulture.bind(this);
+
+        return (
+            <div>
+                <Dialog open={this.state.open} onClose={handleClose}>
+                    <DialogTitle>Add a new message</DialogTitle>
+                    <DialogContentText>Adding new messages to the catalog, enhances the application experience with possibility of
+                        adding a translation to help all users use the application.
+                    </DialogContentText>
+                    <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <TextField id="messageKey" variant="standard" label="Key" required={true} value={this.state.messageKey} onChange={updateKey} />
+                        <TextField id="messageValue" variant="standard" label="Value" required={true} value={this.state.messageValue} onChange={updateValue} />
+                        <TextField id="messageCulture" variant="standard" label="Culture" required={true} value={this.state.messageCulture} onChange={updateCulture} />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant='contained' onClick={save}>Save</Button>
+                        <Button variant='text' onClick={handleClose}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+            </div >);
+    }
+
 }
+
+export default MessageForm;

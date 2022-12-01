@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './events/Events'
 import MessageForm from './forms/MessageForm';
 import MessageTable from './tables/MessageTable';
 import AddAction from './actions/AddAction';
 import { Button } from '@mui/material';
 import MessageController from './controller/MessagesController';
+import Events from './events/EventManager';
 // import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -14,7 +16,7 @@ root.render(
     <MessageForm name="matt"/>
     <Button variant='contained' onClick={MessageController.LoadAllMessages}>Refresh</Button>
     <MessageTable />
-    <AddAction addCallback={() => {document.dispatchEvent(new Event('ShowMessageForm'));}} />
+    <AddAction addCallback={() => {Events.Raise('ShowMessageForm');}} />
   </React.StrictMode>
 );
 

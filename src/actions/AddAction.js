@@ -8,9 +8,7 @@ function AddAction(args) {
     const add = function () {
         console.log("adding a new message?");
         if (typeof addCallback === 'function') {
-            console.log('callback function starting...');
             addCallback.call();
-            console.log('callback function finished.');
         }
     }
 
